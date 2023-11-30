@@ -4,6 +4,7 @@ import sqlite3
 from datetime import datetime
 import uuid
 import pandas as pd
+import logging
 
 
 # Function to create SQLite connection and table if not exists
@@ -247,24 +248,28 @@ def main():
 
     if st.button("Save", type="primary", use_container_width=True):
         # Save and display uploaded photo
+        logging.basicConfig(level=logging.DEBUG)
         if uploaded_file is not None:
-            # Generate a unique filename using a combination of timestamp and a random string
-            unique_filename = str(uuid.uuid4()) + "_" + uploaded_file.name
+            try:
+                # Generate a unique filename using a combination of timestamp and a random string
+                unique_filename = str(uuid.uuid4()) + "_" + uploaded_file.name
 
-            # Save uploaded photo to a directory with the unique filename
-            save_path = os.path.join("uploads", unique_filename)
-            with open(save_path, "wb") as f:
-                f.write(uploaded_file.getbuffer())
+                # Save uploaded photo to a directory with the unique filename
+                save_path = os.path.join("uploads", unique_filename)
+                with open(save_path, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
 
-            # Insert data into SQLite database if user doesn't already exist
-            if insert_data(
-                name, birth_date, address, ig_username, whatsapp_number, save_path
-            ):
-                st.success("Data saved successfully.")
-                st.rerun
-            else:
-                st.warning("User with the same information already exists.")
-
+                # Insert data into SQLite database if user doesn't already exist
+                if insert_data(
+                    name, birth_date, address, ig_username, whatsapp_number, save_path
+                ):
+                    st.success("Data saved successfully.")
+                    st.rerun
+                else:
+                    st.warning("User with the same information already exists.")
+            except Exception as e:
+                # Log the exception for debugging
+                logging.error(f"Error saving photo: {e}")
     # Display user data table
     st.markdown(
         '<hr style="border: 2px solid #ffffff; margin: 20px 0;">',
